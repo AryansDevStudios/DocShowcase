@@ -1,0 +1,28 @@
+{
+  "placeholderImages": [
+    {
+      "id": "homepage-hero",
+      "description": "Person writing on a laptop, symbolizing content creation.",
+      "imageUrl": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx3cml0aW5nJTIwY29udGVudHxlbnwwfHx8fDE3NTk2Nzg5OTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "content creation"
+    },
+    {
+      "id": "homepage-markdown",
+      "description": "Image representing markdown editing",
+      "imageUrl": "https://images.unsplash.com/photo-1631651693480-97f1132e333d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxNnx8ZG9jdW1lbnR8ZW58MHx8fHwxNzU5MzMxMDMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "document"
+    },
+    {
+      "id": "homepage-html",
+      "description": "Image representing HTML code",
+      "imageUrl": "https://images.unsplash.com/photo-1518773553398-650c184e0bb3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxodG1sJTIwY29kZXxlbnwwfHx8fDE3NTkyOTc2NDV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "html code"
+    },
+    {
+      "id": "homepage-latex",
+      "description": "Image representing LaTeX formulas",
+      "imageUrl": "https://images.unsplash.com/photo-1509228468518-180dd4864904?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxtYXRoJTIwZm9ybXVsYXxlbnwwfHx8fDE3NTkyMjcxMzR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "math formula"
+    }
+  ]
+}
