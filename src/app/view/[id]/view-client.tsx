@@ -61,9 +61,9 @@ export function ViewDocumentClient({
   const contentWidthClass = useFullWidth ? "w-full" : "mx-auto w-full max-w-4xl";
 
   const content = (
-    <div className={`${contentWidthClass} px-4 py-8`}>
+    <div className={`${contentWidthClass} px-0 sm:px-4 py-4 sm:py-8`}>
       {showGui && (
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-4 px-4 sm:px-0">
           <div className="flex-1 min-w-0">
             {document.name && (
               <h1 className="text-2xl font-bold tracking-tight">
@@ -84,7 +84,7 @@ export function ViewDocumentClient({
         </div>
       )}
 
-      <div className={showGui ? "rounded-xl border border-border bg-card p-6 sm:p-8" : "p-4 sm:p-8"}>
+      <div className={showGui ? "rounded-none sm:rounded-xl border-y sm:border-x border-border bg-card px-3 py-6 sm:p-8" : "px-3 py-6 sm:p-8"}>
         <PreviewPane content={document.content} type="markdown" />
       </div>
     </div>

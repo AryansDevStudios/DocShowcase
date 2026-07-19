@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Save, Eye, Code, Loader2, Lock, FileText } from "lucide-react";
 import { PreviewPane } from "@/components/preview-pane";
@@ -30,6 +31,20 @@ export function EditorView({
   const [passkey, setPasskey] = useState("");
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"editor" | "preview">("editor");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const logoText = document.getElementById("header-logo-text");
+    if (logoText) {
+      logoText.classList.add("max-md:hidden");
+    }
+    return () => {
+      if (logoText) {
+        logoText.classList.remove("max-md:hidden");
+      }
+    };
+  }, []);
 
   // Refs for scroll sync
   const editorRef = useRef<HTMLTextAreaElement>(null);
@@ -200,86 +215,154 @@ export function EditorView({
 
   return (
     <div className="absolute inset-0 flex flex-col min-h-0 bg-background">
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border bg-card px-4 py-2">
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Document name (optional)"
-          className="flex-1 min-w-[140px] rounded-lg border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        />
+        {/* Document Name - Portaled to Main Header on Mobile */}
+        {mounted && document.getElementById("header-mobile-portal")
+          ? createPortal(
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Document name (optional)"
+                className="w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-base font-semibold text-foreground placeholder:text-muted-foreground focus:border-input focus:bg-background focus:outline-none transition-colors"
+              />,
+              document.getElementById("header-mobile-portal")!
+            )
+          : null}
 
-        <select
-          value={docType}
-          onChange={(e) => setDocType(e.target.value as DocType)}
-          className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
-        >
-          <option value="markdown">Markdown</option>
-          <option value="html">HTML</option>
-        </select>
-
-        {/* Passkey input — only for new documents */}
-        {!isEditing && (
-          <div className="relative">
-            <Lock className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <input
-              type="password"
-              value={passkey}
-              onChange={(e) => setPasskey(e.target.value)}
-              placeholder="Passkey (optional)"
-              className="rounded-lg border border-input bg-background pl-8 pr-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-[160px]"
-            />
+        {/* Mobile Toolbar */}
+      <div className="flex md:hidden flex-col border-b border-border bg-card">
+        {/* Controls Row */}
+        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
+          <div className="flex items-center gap-2">
+            <select
+              value={docType}
+              onChange={(e) => setDocType(e.target.value as DocType)}
+              className="rounded-md border border-input bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
+            >
+              <option value="markdown">Markdown</option>
+              <option value="html">HTML</option>
+            </select>
+            
+            {!isEditing && (
+              <div className="relative w-[130px]">
+                <Lock className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                <input
+                  type="password"
+                  value={passkey}
+                  onChange={(e) => setPasskey(e.target.value)}
+                  placeholder="Passkey (optional)"
+                  className="w-full rounded-md border border-input bg-background pl-6 pr-2 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+              </div>
+            )}
+            
+            {/* Size indicator */}
+            <div
+              className={`text-[10px] tabular-nums ${
+                isNearLimit ? "text-destructive font-medium" : "text-muted-foreground"
+              }`}
+            >
+              {(contentByteSize / 1024).toFixed(0)}KB/1MB
+            </div>
           </div>
-        )}
 
-        {/* Size indicator */}
-        <div
-          className={`text-xs tabular-nums ${
-            isNearLimit ? "text-destructive font-medium" : "text-muted-foreground"
-          }`}
-        >
-          {(contentByteSize / 1024).toFixed(0)}KB / 1MB
+          <button
+            onClick={handleSave}
+            disabled={saving || !content.trim()}
+            className="inline-flex shrink-0 items-center justify-center gap-1 rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            {saving ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Save className="h-3.5 w-3.5" />
+            )}
+            <span className="hidden min-[360px]:inline">
+              {isEditing ? "Update" : "Save"}
+            </span>
+          </button>
         </div>
-
-        <button
-          onClick={handleSave}
-          disabled={saving || !content.trim()}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 cursor-pointer"
-        >
-          {saving ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Save className="h-3.5 w-3.5" />
-          )}
-          {isEditing ? "Update" : "Save & Share"}
-        </button>
       </div>
 
-      {/* Mobile tabs */}
+      {/* Mobile Tabs */}
       <div className="flex md:hidden border-b border-border bg-card">
         <button
           onClick={() => setActiveTab("editor")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-colors cursor-pointer ${
             activeTab === "editor"
               ? "text-primary border-b-2 border-primary"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          <Code className="h-3.5 w-3.5" />
+          <Code className="h-4 w-4" />
           Editor
         </button>
         <button
           onClick={() => setActiveTab("preview")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-colors cursor-pointer ${
             activeTab === "preview"
               ? "text-primary border-b-2 border-primary"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          <Eye className="h-3.5 w-3.5" />
+          <Eye className="h-4 w-4" />
           Preview
         </button>
+      </div>
+
+      {/* Desktop Toolbar */}
+      <div className="hidden md:flex items-center gap-2 border-b border-border bg-card px-4 py-2">
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Document name (optional)"
+          className="flex-1 rounded-lg border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+
+        <div className="flex items-center gap-2">
+          <select
+            value={docType}
+            onChange={(e) => setDocType(e.target.value as DocType)}
+            className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer shrink-0"
+          >
+            <option value="markdown">Markdown</option>
+            <option value="html">HTML</option>
+          </select>
+
+          {!isEditing && (
+            <div className="relative shrink-0">
+              <Lock className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="password"
+                value={passkey}
+                onChange={(e) => setPasskey(e.target.value)}
+                placeholder="Passkey (optional)"
+                className="rounded-lg border border-input bg-background pl-8 pr-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-[160px]"
+              />
+            </div>
+          )}
+
+          <div
+            className={`text-xs tabular-nums shrink-0 ${
+              isNearLimit ? "text-destructive font-medium" : "text-muted-foreground"
+            }`}
+          >
+            {(contentByteSize / 1024).toFixed(0)}KB / 1MB
+          </div>
+
+          <button
+            onClick={handleSave}
+            disabled={saving || !content.trim()}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 cursor-pointer whitespace-nowrap"
+          >
+            {saving ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Save className="h-3.5 w-3.5" />
+            )}
+            {isEditing ? "Update" : "Save & Share"}
+          </button>
+        </div>
       </div>
 
       {/* Editor + Preview */}
@@ -289,10 +372,10 @@ export function EditorView({
         
         {/* Editor pane */}
         <div
-          style={{ width: `${editorWidth}%` }}
+          style={{ "--pane-width": `${editorWidth}%` } as React.CSSProperties}
           className={`${
             activeTab === "editor" ? "flex" : "hidden"
-          } md:flex flex-col w-full md:w-auto min-h-0`}
+          } md:flex flex-col w-full md:w-[var(--pane-width)] min-h-0`}
         >
           <textarea
             ref={editorRef}
@@ -317,10 +400,10 @@ export function EditorView({
 
         {/* Preview pane */}
         <div
-          style={{ width: `${100 - editorWidth}%` }}
+          style={{ "--pane-width": `${100 - editorWidth}%` } as React.CSSProperties}
           className={`${
             activeTab === "preview" ? "flex" : "hidden"
-          } md:flex flex-col w-full md:w-auto min-h-0 bg-background`}
+          } md:flex flex-col w-full md:w-[var(--pane-width)] min-h-0 bg-background`}
         >
           <div className="hidden md:flex items-center gap-1.5 px-4 py-1.5 text-xs text-muted-foreground border-b border-border bg-muted/50">
             <Eye className="h-3 w-3" />
