@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { FileText, Plus } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { EditorSettingsDialog } from "@/components/editor-settings-dialog";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md print:hidden">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <Link
@@ -32,6 +33,7 @@ export function Header() {
             <span className="hidden sm:inline">New Doc</span>
           </Link>
           <ThemeToggle />
+          <EditorSettingsDialog />
         </div>
       </div>
     </header>

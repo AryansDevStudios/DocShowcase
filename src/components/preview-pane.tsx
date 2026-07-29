@@ -65,13 +65,13 @@ function remarkSingleLineMathDisplay() {
 
 interface PreviewPaneProps {
   content: string;
-  type: "markdown" | "html";
+  type: "markdown" | "html" | "custom";
   className?: string;
   onScroll?: React.UIEventHandler<HTMLElement>;
+  ref?: React.Ref<HTMLElement>;
 }
 
-export const PreviewPane = memo(forwardRef<HTMLElement, PreviewPaneProps>(
-  ({ content, type, className = "", onScroll }, ref) => {
+export const PreviewPane = ({ content, type, className = "", onScroll, ref }: PreviewPaneProps) => {
   if (!content.trim()) {
     return (
       <div
@@ -112,6 +112,20 @@ export const PreviewPane = memo(forwardRef<HTMLElement, PreviewPaneProps>(
       return () => clearTimeout(timeout);
     }
   }, []);
+
+  if (type === "custom") {
+    return (
+      <div
+        ref={ref as React.Ref<HTMLDivElement>}
+        onScroll={onScroll}
+        className={`w-full h-full overflow-auto bg-background ${className}`}
+      >
+        <pre className="whitespace-pre-wrap break-words font-mono text-sm p-4">
+          {content}
+        </pre>
+      </div>
+    );
+  }
 
   return (
     <div ref={ref as React.Ref<HTMLDivElement>} onScroll={onScroll} className={`preview-content overflow-auto scroll-smooth ${className}`}>
@@ -188,5 +202,5 @@ export const PreviewPane = memo(forwardRef<HTMLElement, PreviewPaneProps>(
       </ReactMarkdown>
     </div>
   );
-}));
+};
 PreviewPane.displayName = "PreviewPane";

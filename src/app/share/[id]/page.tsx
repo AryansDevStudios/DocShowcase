@@ -21,5 +21,13 @@ export default async function SharePage({ params }: SharePageProps) {
     notFound();
   }
 
-  return <ShareClient documentId={id} documentName={document.name} documentType={document.type} />;
+  return (
+    <ShareClient 
+      documentId={id} 
+      documentName={document.name} 
+      documentType={document.type} 
+      burnAfterReading={document.burnAfterReading || false}
+      expiresAt={document.expiresAt ? document.expiresAt.seconds * 1000 : null}
+    />
+  );
 }

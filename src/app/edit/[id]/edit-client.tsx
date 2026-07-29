@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { EditorView } from "@/components/editor-view";
 import type { DocumentData } from "@/lib/types";
-import { Loader2, ShieldAlert, Lock } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
 import Link from "next/link";
 
 interface EditDocumentClientProps {
@@ -12,7 +11,7 @@ interface EditDocumentClientProps {
   document: {
     name: string;
     content: string;
-    type: "markdown" | "html";
+    type: "markdown" | "html" | "custom";
     passkeyHash: string | null;
   };
 }
@@ -26,7 +25,6 @@ export function EditDocumentClient({
   const [passkey, setPasskey] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     // Check for session token in sessionStorage
@@ -99,8 +97,19 @@ export function EditDocumentClient({
           </div>
           
           <form onSubmit={handleVerify}>
+            {/* Hidden username field for password managers */}
+            <input 
+              type="text" 
+              name="username" 
+              value={`docshowcase-${documentId}`} 
+              readOnly 
+              hidden 
+              autoComplete="username" 
+            />
             <input
               type="password"
+              name="password"
+              autoComplete="current-password"
               value={passkey}
               onChange={(e) => {
                 setPasskey(e.target.value);

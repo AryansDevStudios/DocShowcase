@@ -5,6 +5,9 @@ import {
   doc,
   setDoc,
   getDoc,
+  updateDoc,
+  deleteDoc,
+  increment,
   serverTimestamp,
 } from "firebase/firestore";
 import { revalidatePath } from "next/cache";
@@ -52,7 +55,8 @@ export async function saveDocument(
   name: string,
   content: string,
   type: DocType,
-  passkey: string | null
+  passkey: string | null,
+  expiration: "never" | "burn" | "1h" | "24h" | "7d" = "never"
 ) {
   try {
     // Authenticate server as the editor user
@@ -72,7 +76,7 @@ export async function saveDocument(
         const docRef = doc(db, "documents", slug);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          docId = `${slug}-${generateShortId(6)}`;
+          return { error: `The name "${slug}" is already taken. Please choose another name or leave it blank to auto-generate one.` };
         } else {
           docId = slug;
         }
@@ -86,12 +90,27 @@ export async function saveDocument(
     // Hash passkey if provided
     const passkeyHash = passkey ? await hashPasskey(passkey) : null;
 
+    let expiresAt = null;
+    let burnAfterReading = false;
+
+    if (expiration === "burn") {
+      burnAfterReading = true;
+    } else if (expiration === "1h") {
+      expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+    } else if (expiration === "24h") {
+      expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    } else if (expiration === "7d") {
+      expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    }
+
     const docRef = doc(db, "documents", docId);
     await setDoc(docRef, {
       name: name.trim() || "",
       content,
       type,
       passkeyHash,
+      burnAfterReading,
+      expiresAt,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
@@ -156,3 +175,45 @@ export async function getDocument(
     return null;
   }
 }
+
+export async function registerView(id: string) {
+  try {
+    const docData = await getDocument(id);
+    if (!docData) return;
+
+    // Lazy-delete expired documents
+    if (docData.expiresAt && Date.now() > docData.expiresAt.seconds * 1000) {
+      await deleteDocument(id);
+      return;
+    }
+
+    // Always increment view count (even for burn-after-reading — deletion is handled separately by the client after viewing)
+    await authenticateEditor();
+    const docRef = doc(db, "documents", id);
+    await updateDoc(docRef, {
+      views: increment(1)
+    });
+  } catch (error) {
+    console.error("Error registering view:", error);
+  }
+}
+
+export async function burnDocument(id: string) {
+  try {
+    await authenticateEditor();
+    const docRef = doc(db, "documents", id);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error("Error burning document:", error);
+  }
+}
+export async function deleteDocument(id: string) {
+  try {
+    await authenticateEditor();
+    const docRef = doc(db, "documents", id);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error("Error deleting document:", error);
+  }
+}
+

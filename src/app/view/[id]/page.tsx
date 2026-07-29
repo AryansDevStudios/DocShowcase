@@ -18,9 +18,23 @@ export async function generateMetadata({
     return { title: "Document Not Found" };
   }
 
+  const title = document.name || "Untitled Document";
+  const description = `View this ${document.type} document on DocShowcase`;
+
   return {
-    title: document.name || "Untitled Document",
-    description: `View this ${document.type} document on DocShowcase`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      siteName: "DocShowcase",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   };
 }
 
@@ -36,16 +50,23 @@ export default async function ViewPage({ params, searchParams }: ViewPageProps) 
     notFound();
   }
 
+  // Expired documents should not be viewable
+  if (document.expiresAt && Date.now() > document.expiresAt.seconds * 1000) {
+    notFound();
+  }
+
   return (
     <ViewDocumentClient
       documentId={id}
-      uihidden={isUiHidden}
       display={displayMode}
       document={{
         name: document.name,
         content: document.content,
         type: document.type,
         passkeyHash: document.passkeyHash,
+        views: document.views,
+        burnAfterReading: document.burnAfterReading || false,
+        expiresAt: document.expiresAt ? document.expiresAt.seconds * 1000 : null,
         updatedAt: document.updatedAt ? document.updatedAt.seconds * 1000 : undefined,
       }}
     />

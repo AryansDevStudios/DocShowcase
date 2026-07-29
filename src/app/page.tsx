@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RecentDocuments } from "@/components/recent-documents";
 import {
   FileText,
   Code,
@@ -7,6 +8,9 @@ import {
   Lock,
   Zap,
   ArrowRight,
+  Shield,
+  Hourglass,
+  Printer
 } from "lucide-react";
 
 export default function HomePage() {
@@ -51,6 +55,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <RecentDocuments />
+
       {/* Features Section */}
       <section className="border-t border-border bg-card/50">
         <div className="mx-auto max-w-5xl px-4 py-16">
@@ -91,10 +97,46 @@ export default function HomePage() {
                   "Set an optional passkey when creating. Only those with the passkey can edit. No passkey = read-only forever.",
               },
               {
-                icon: Zap,
-                title: "LaTeX Math",
+                icon: Shield,
+                title: "End-to-End Encryption",
                 description:
-                  "Write inline $math$ or block $$equations$$. Powered by KaTeX for fast, beautiful rendering.",
+                  "Set a View Password to encrypt your document in the browser before upload. The server never sees your content.",
+              },
+              {
+                icon: Hourglass,
+                title: "Self-Destruct",
+                description:
+                  "Set documents to expire in 1hr, 24hrs, 7 days, or Burn After Reading so they vanish instantly once viewed.",
+              },
+              {
+                icon: Eye,
+                title: "View Counters",
+                description:
+                  "Track the popularity of your documents with real-time view counters displayed directly on the viewer page.",
+              },
+              {
+                icon: Printer,
+                title: "PDF Export",
+                description:
+                  "Instantly generate and download a beautifully styled PDF of your rendered Markdown or HTML document.",
+              },
+              {
+                icon: Code,
+                title: "Custom Formats",
+                description:
+                  "Host .js, .py, .css files and more. The /raw endpoint automatically infers the MIME type for easy embedding.",
+              },
+              {
+                icon: Share2,
+                title: "Social Previews",
+                description:
+                  "Share links on Discord, Slack, or Twitter and watch them unfurl with rich Open Graph preview cards.",
+              },
+              {
+                icon: FileText,
+                title: "Recent Documents",
+                description:
+                  "Never lose a link again. Your browser securely remembers your recently created and viewed documents.",
               },
             ].map((feature) => (
               <div
@@ -149,10 +191,16 @@ export default function HomePage() {
               </h3>
               <ul className="space-y-4 text-sm text-muted-foreground">
                 <li>
-                  <strong className="text-foreground">Default or ?display=normal:</strong> Serves the file natively to your browser (plain text for Markdown, native webpage for HTML) without iframes or app UI.
+                  <strong className="text-foreground">Default or ?display=normal:</strong> Serves the file natively to your browser without iframes or app UI.
+                </li>
+                <li>
+                  <strong className="text-foreground">Custom Extensions:</strong> URL paths like <code>/raw/styles.css</code> are automatically served with the correct MIME type (e.g. <code>text/css</code>).
                 </li>
                 <li>
                   <strong className="text-foreground">?display=download:</strong> Triggers an instant download of the file to your computer.
+                </li>
+                <li>
+                  <strong className="text-foreground">Encrypted Files:</strong> Serves the raw encrypted ciphertext (<code>ENC:...</code>) which must be decrypted client-side.
                 </li>
               </ul>
             </div>

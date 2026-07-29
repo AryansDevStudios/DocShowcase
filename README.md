@@ -28,6 +28,8 @@
 - **Resizable Panels** — Drag the divider between editor and preview to your preferred split (15%–85%)
 - **Scroll Sync** — Editor and preview scroll positions stay in sync
 - **Draft Recovery** — Unsaved work is automatically saved to `localStorage` every 500ms and restored on return
+- **Deep Customization** — A robust settings menu with 25 preferences covering typography (custom fonts, ligatures), visuals (minimap, whitespace), behavior (cursor styles, smooth scrolling), and coding assistance (auto-closing tags, bracket pair colorization). Settings persist in `localStorage`
+- **Engine Selection** — Use the high-performance Monaco Editor (which powers VS Code) for desktop-class IDE features, or seamlessly switch to a Standard Textarea fallback for maximum speed on low-end devices
 
 ### 🧮 Rich Content Support
 
@@ -45,19 +47,24 @@
 - **Heading Anchors** — Every heading gets an auto-generated ID for direct linking (`#section-name`)
 - **Smooth Scrolling** — Internal anchor links scroll smoothly to their target
 
-### 🔒 Security
+### 🔒 Security & Privacy
 
-- **Passkey Protection** — Optionally protect documents with a passkey (SHA-256 hashed, never stored in plain text)
-- **Edit via `/edit/` route** — Editing is done on a separate URL that requires passkey verification
-- **Read-Only by Default** — Documents without a passkey are permanently read-only
-- **Sandboxed HTML** — HTML previews run in sandboxed iframes for security
+- **End-to-End Encryption (E2E)** — Set a View Password to encrypt your document using the **Web Crypto API (AES-GCM)** right in the browser! The server only ever receives and stores the encrypted ciphertext. Even the `/raw` endpoint serves encrypted data for these files.
+- **Self-Destructing Documents** — Set documents to automatically expire! Choose from **1 Hour, 24 Hours, 7 Days, or "Burn After Reading"**. Burn After Reading ensures the document is permanently deleted from Firestore the moment it is successfully viewed/decrypted by the first person.
+- **Passkey Protection** — Optionally protect documents with an edit passkey (SHA-256 hashed, never stored in plain text).
+- **Read-Only by Default** — Documents without a passkey are permanently read-only.
+- **Sandboxed HTML** — HTML previews run in sandboxed iframes for security.
 
-### 🎨 Design
+### 🎨 Design & Experience
 
-- **Dark / Light / System Themes** — Seamless theme switching with full design system support
-- **Theme-Aware Diagrams** — Mermaid flowcharts and code blocks adapt their colors to match the current theme
-- **Modern UI** — Built with Radix primitives, Lucide icons, and custom animations
-- **Responsive** — Works beautifully on desktop, tablet, and mobile
+- **Dark / Light / System Themes** — Seamless theme switching with full design system support.
+- **Theme-Aware Diagrams** — Mermaid flowcharts and code blocks adapt their colors to match the current theme.
+- **Recent Documents History** — Never lose track of a document again. Your browser securely saves a history of documents you view or create using `localStorage`, displayed elegantly on the Home Page.
+- **Real-Time View Counters** — See exactly how popular your document is. Every successful view triggers an atomic `increment(1)` in Firestore, updating the view counter visible in the header.
+- **PDF Export** — Generate beautifully styled, print-ready PDFs directly from the document viewer using optimized `@media print` CSS that strips out unnecessary UI elements.
+- **Open Graph Social Previews** — Dynamic titles and rich social media cards generated natively so your shared links look incredible on Discord, Slack, Twitter, and iMessage.
+- **Custom Format Auto-Detection** — Add extensions like `.js`, `.py`, `.css`, or `.json` to your document name. The `/raw` endpoint automatically infers the correct `Content-Type` MIME headers for seamless embedding in other websites!
+- **Responsive Mobile Overhaul** — A completely revamped, touch-friendly mobile editor toolbar that neatly stacks formatting and security controls for writing on the go.
 
 ---
 
@@ -246,20 +253,26 @@ When viewing a document, you can customize the display using query parameters:
 
 ### Raw Endpoint (`/raw/{id}`)
 
-Access documents natively in the browser without any sandbox, iframes, or website UI.
+Access documents natively in the browser without any sandbox, iframes, or website UI. The route automatically infers the MIME type from the file extension.
 
 | Parameter   | Value      | Behavior                                                                                    |
 | ----------- | ---------- | ------------------------------------------------------------------------------------------- |
-| *(none)*    | —          | **Default.** Renders natively in the browser (`text/plain` for Markdown, `text/html` for HTML) |
+| *(none)*    | —          | **Default.** Renders natively in the browser (`text/plain` for Markdown, `text/css` for CSS, etc.) |
 | `display`   | `normal`   | Explicitly acts identical to the default behavior.                                          |
-| `display`   | `download` | Triggers a file download to the user's computer (as `.md` or `.html`).                      |
+| `display`   | `download` | Triggers a file download to the user's computer with the correct file extension.            |
 
-#### Examples
+#### Custom Extensions
 
-```
-/raw/my-document.md                    → Native raw rendering in the browser
-/raw/my-document.html?display=download → Downloads the file directly
-```
+You can use custom file extensions in the URL to override the Content-Type. For example:
+- `/raw/styles.css` → served as `text/css`
+- `/raw/script.js` → served as `application/javascript`
+- `/raw/data.json` → served as `application/json`
+
+If no extension is provided in the URL, DocShowcase automatically redirects to the correct extension based on the document type (e.g., `/raw/my-doc` → `/raw/my-doc.md`).
+
+#### Encrypted Documents
+
+If the document is protected with a **View Password** (End-to-End Encryption), the `/raw` endpoint will serve the encrypted ciphertext payload (prefixed with `ENC:` followed by base64 data) instead of the raw plaintext content. Users must manually decrypt this payload using the Web Crypto API on their end if fetching programmatically.
 
 ---
 

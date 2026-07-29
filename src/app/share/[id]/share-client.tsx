@@ -12,20 +12,24 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { saveRecentDocument } from "@/lib/recent";
 
 interface ShareClientProps {
   documentId: string;
   documentName: string;
-  documentType: "markdown" | "html";
+  documentType: "markdown" | "html" | "custom";
+  burnAfterReading?: boolean;
+  expiresAt?: number | null;
 }
 
-export function ShareClient({ documentId, documentName, documentType }: ShareClientProps) {
+export function ShareClient({ documentId, documentName, documentType, burnAfterReading = false, expiresAt = null }: ShareClientProps) {
   const [copied, setCopied] = useState(false);
   const [viewUrl, setViewUrl] = useState("");
   const [format, setFormat] = useState("default");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
+    saveRecentDocument(documentId, documentName, documentType, "created", expiresAt, burnAfterReading);
     let url = `${window.location.origin}/view/${documentId}`;
     
     if (format === "compact") {
@@ -33,10 +37,20 @@ export function ShareClient({ documentId, documentName, documentType }: ShareCli
     } else if (format === "extended") {
       url += "?display=extended";
     } else if (format === "raw") {
-      const ext = documentType === "html" ? "html" : "md";
+      let ext = "md";
+      if (documentType === "html") ext = "html";
+      else if (documentType === "custom") {
+        const nameExtMatch = documentName?.match(/\.([a-z0-9]+)$/i);
+        ext = nameExtMatch ? nameExtMatch[1].toLowerCase() : "txt";
+      }
       url = `${window.location.origin}/raw/${documentId}.${ext}`;
     } else if (format === "download") {
-      const ext = documentType === "html" ? "html" : "md";
+      let ext = "md";
+      if (documentType === "html") ext = "html";
+      else if (documentType === "custom") {
+        const nameExtMatch = documentName?.match(/\.([a-z0-9]+)$/i);
+        ext = nameExtMatch ? nameExtMatch[1].toLowerCase() : "txt";
+      }
       url = `${window.location.origin}/raw/${documentId}.${ext}?display=download`;
     }
 
@@ -117,7 +131,7 @@ export function ShareClient({ documentId, documentName, documentType }: ShareCli
             )}
           </button>
 
-          {"share" in navigator && (
+          {typeof navigator !== "undefined" && "share" in navigator && (
             <button
               onClick={handleNativeShare}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors cursor-pointer"
