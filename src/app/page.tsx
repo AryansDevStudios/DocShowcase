@@ -10,7 +10,8 @@ import {
   ArrowRight,
   Shield,
   Hourglass,
-  Printer
+  Printer,
+  Settings
 } from "lucide-react";
 
 export default function HomePage() {
@@ -71,6 +72,12 @@ export default function HomePage() {
                 title: "Markdown Editor",
                 description:
                   "Full GitHub-flavored Markdown with live preview. Tables, code blocks, task lists — all supported.",
+              },
+              {
+                icon: Settings,
+                title: "IDE-Grade Experience",
+                description:
+                  "Powered by the Monaco Engine (VS Code). Enjoy a minimap, multi-cursor, bracket pair colorization, and 25+ customizable settings.",
               },
               {
                 icon: Code,
