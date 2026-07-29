@@ -16,8 +16,9 @@ import {
   AlertTriangle,
   ExternalLink
 } from "lucide-react";
-import { adminDeleteDocument, adminLogout, adminGetFullDocument } from "@/lib/actions";
+import { adminDeleteDocument, adminGetFullDocument, getAllDocuments } from "@/lib/actions";
 import { PreviewPane } from "@/components/preview-pane";
+import { useEffect } from "react";
 
 interface AdminDocument {
   id: string;
@@ -31,10 +32,27 @@ interface AdminDocument {
   isEncrypted: boolean;
 }
 
-export function AdminDashboardClient({ initialDocuments }: { initialDocuments: AdminDocument[] }) {
-  const [documents, setDocuments] = useState<AdminDocument[]>(initialDocuments);
+export function AdminDashboardClient({ adminPassword, onLogout }: { adminPassword: string, onLogout: () => void }) {
+  const [documents, setDocuments] = useState<AdminDocument[]>([]);
+  const [isLoadingDocs, setIsLoadingDocs] = useState(true);
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    getAllDocuments(adminPassword).then(docs => {
+      if (isMounted) {
+        setDocuments(docs);
+        setIsLoadingDocs(false);
+      }
+    }).catch(err => {
+      if (isMounted) {
+        setIsLoadingDocs(false);
+        alert("Failed to fetch documents. Check password.");
+      }
+    });
+    return () => { isMounted = false; };
+  }, [adminPassword]);
   
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -60,7 +78,7 @@ export function AdminDashboardClient({ initialDocuments }: { initialDocuments: A
     
     setDeletingId(id);
     setDeleteError(null);
-    const res = await adminDeleteDocument(id);
+    const res = await adminDeleteDocument(id, adminPassword);
     if (res.success) {
       setDocuments(docs => docs.filter(d => d.id !== id));
       setConfirmDeleteId(null);
@@ -70,16 +88,15 @@ export function AdminDashboardClient({ initialDocuments }: { initialDocuments: A
     setDeletingId(null);
   };
 
-  const handleLogout = async () => {
-    await adminLogout();
-    window.location.reload();
+  const handleLogout = () => {
+    onLogout();
   };
 
   const openPreview = async (doc: AdminDocument) => {
     setPreviewDoc(doc);
     setLoadingContent(true);
     try {
-      const res = await adminGetFullDocument(doc.id);
+      const res = await adminGetFullDocument(doc.id, adminPassword);
       if (res.success && res.content !== undefined) {
         setFullContent(res.content);
       } else {
@@ -129,9 +146,15 @@ export function AdminDashboardClient({ initialDocuments }: { initialDocuments: A
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredDocs.map(doc => (
-            <div key={doc.id} className="group flex flex-col rounded-xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-all">
+        {isLoadingDocs ? (
+          <div className="flex justify-center items-center py-20 text-muted-foreground">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <span className="ml-3">Loading documents...</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredDocs.map(doc => (
+              <div key={doc.id} className="group flex flex-col rounded-xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-all">
               {/* Card Header */}
               <div className="flex items-start justify-between p-4 border-b border-border/50 bg-muted/20">
                 <div className="flex items-center gap-3 overflow-hidden">
@@ -212,15 +235,16 @@ export function AdminDashboardClient({ initialDocuments }: { initialDocuments: A
             </div>
           ))}
 
-          {filteredDocs.length === 0 && (
-            <div className="col-span-full py-20 text-center text-muted-foreground">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-4">
-                <Search className="h-6 w-6" />
+            {filteredDocs.length === 0 && (
+              <div className="col-span-full py-20 text-center text-muted-foreground">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-4">
+                  <Search className="h-6 w-6" />
+                </div>
+                <p>No documents found.</p>
               </div>
-              <p>No documents found.</p>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </main>
 
       {/* Full Preview Modal */}

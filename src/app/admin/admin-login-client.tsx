@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Lock, Loader2, ShieldAlert } from "lucide-react";
-import { adminLogin } from "@/lib/actions";
+import { checkAdminPassword } from "@/lib/actions";
 
-export function AdminLoginClient() {
+export function AdminLoginClient({ onLogin }: { onLogin: (password: string) => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,12 +20,11 @@ export function AdminLoginClient() {
     setError("");
 
     try {
-      const res = await adminLogin(password);
-      if (res.success) {
-        // Refresh to let Server Component see the new cookie
-        window.location.reload();
+      const isValid = await checkAdminPassword(password);
+      if (isValid) {
+        onLogin(password);
       } else {
-        setError(res.error || "Login failed.");
+        setError("Invalid master password.");
       }
     } catch {
       setError("Network error. Please try again.");

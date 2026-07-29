@@ -251,39 +251,21 @@ export async function deleteDocument(id: string) {
 // ADMIN DASHBOARD ACTIONS
 // ==========================================
 
-export async function adminLogin(password: string) {
+async function verifyAdmin(password: string) {
   const adminPass = process.env.ADMIN_PASSWORD;
   if (!adminPass || password !== adminPass) {
-    return { success: false, error: "Invalid admin password" };
-  }
-  
-  const cookieStore = await cookies();
-  cookieStore.set("admin-token", password, { 
-    httpOnly: true, 
-    secure: process.env.NODE_ENV === "production",
-    path: "/"
-  });
-  return { success: true };
-}
-
-export async function adminLogout() {
-  const cookieStore = await cookies();
-  cookieStore.delete("admin-token");
-  return { success: true };
-}
-
-async function verifyAdmin() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin-token")?.value;
-  const adminPass = process.env.ADMIN_PASSWORD;
-  if (!adminPass || token !== adminPass) {
     throw new Error("Unauthorized Admin Access");
   }
 }
 
-export async function getAllDocuments() {
+export async function checkAdminPassword(password: string) {
+  const adminPass = process.env.ADMIN_PASSWORD;
+  return !!adminPass && password === adminPass;
+}
+
+export async function getAllDocuments(adminPass: string) {
   try {
-    await verifyAdmin();
+    await verifyAdmin(adminPass);
     const q = query(collection(db, "documents"), orderBy("createdAt", "desc"));
     const snapshot = await getDocs(q);
     return snapshot.docs.map((d) => {
@@ -306,8 +288,8 @@ export async function getAllDocuments() {
   }
 }
 
-export async function adminGetFullDocument(id: string) {
-  await verifyAdmin();
+export async function adminGetFullDocument(id: string, adminPass: string) {
+  await verifyAdmin(adminPass);
   const docData = await getDocument(id);
   if (!docData) {
     return { success: false, error: "Document not found" };
@@ -315,9 +297,9 @@ export async function adminGetFullDocument(id: string) {
   return { success: true, content: docData.content };
 }
 
-export async function adminDeleteDocument(id: string) {
+export async function adminDeleteDocument(id: string, adminPass: string) {
   try {
-    await verifyAdmin();
+    await verifyAdmin(adminPass);
     await authenticateEditor();
     await deleteDoc(doc(db, "documents", id));
     revalidatePath("/admin");
