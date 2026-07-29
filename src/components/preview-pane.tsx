@@ -91,7 +91,7 @@ export const PreviewPane = ({ content, type, className = "", onScroll, ref }: Pr
       <iframe
         ref={ref as React.Ref<HTMLIFrameElement>}
         srcDoc={content}
-        sandbox="allow-scripts allow-modals allow-popups allow-popups-to-escape-sandbox allow-forms allow-downloads allow-pointer-lock allow-orientation-lock allow-top-navigation-by-user-activation"
+        sandbox="allow-scripts allow-same-origin allow-modals allow-popups allow-popups-to-escape-sandbox allow-forms allow-downloads allow-pointer-lock allow-orientation-lock allow-top-navigation-by-user-activation"
         allow="autoplay; clipboard-read; clipboard-write; display-capture; fullscreen"
         className={`w-full h-full border-0 bg-white ${className}`}
         title="HTML Preview"
