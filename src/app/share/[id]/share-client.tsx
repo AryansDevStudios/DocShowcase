@@ -9,20 +9,39 @@ import {
   Plus,
   Share2,
   Check,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 interface ShareClientProps {
   documentId: string;
   documentName: string;
+  documentType: "markdown" | "html";
 }
 
-export function ShareClient({ documentId, documentName }: ShareClientProps) {
+export function ShareClient({ documentId, documentName, documentType }: ShareClientProps) {
   const [copied, setCopied] = useState(false);
   const [viewUrl, setViewUrl] = useState("");
+  const [format, setFormat] = useState("default");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
-    setViewUrl(`${window.location.origin}/view/${documentId}`);
-  }, [documentId]);
+    let url = `${window.location.origin}/view/${documentId}`;
+    
+    if (format === "compact") {
+      url += "?display=compact";
+    } else if (format === "extended") {
+      url += "?display=extended";
+    } else if (format === "raw") {
+      const ext = documentType === "html" ? "html" : "md";
+      url = `${window.location.origin}/raw/${documentId}.${ext}`;
+    } else if (format === "download") {
+      const ext = documentType === "html" ? "html" : "md";
+      url = `${window.location.origin}/raw/${documentId}.${ext}?display=download`;
+    }
+
+    setViewUrl(url);
+  }, [documentId, format, documentType]);
 
   const handleCopy = async () => {
     try {
@@ -80,7 +99,7 @@ export function ShareClient({ documentId, documentName }: ShareClientProps) {
         </div>
 
         {/* Action buttons */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 mb-6">
           <button
             onClick={handleCopy}
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors cursor-pointer"
@@ -109,7 +128,7 @@ export function ShareClient({ documentId, documentName }: ShareClientProps) {
           )}
 
           <Link
-            href={`/view/${documentId}`}
+            href={viewUrl.replace(window.location.origin, "")}
             target="_blank"
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
@@ -124,6 +143,100 @@ export function ShareClient({ documentId, documentName }: ShareClientProps) {
             <Plus className="h-4 w-4" />
             New Doc
           </Link>
+        </div>
+
+        {/* Advanced Options */}
+        <div className="text-left rounded-xl border border-border bg-card overflow-hidden transition-all duration-300">
+          <button 
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="flex w-full items-center justify-between p-4 text-sm font-medium hover:bg-muted/50 cursor-pointer"
+          >
+            Advanced Options
+            {showAdvanced ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+
+          {showAdvanced && (
+            <div className="p-4 border-t border-border bg-muted/20 space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="format" 
+                  value="default" 
+                  checked={format === "default"} 
+                  onChange={(e) => setFormat(e.target.value)}
+                  className="mt-1"
+                />
+                <div>
+                  <div className="text-sm font-medium">Default Viewer</div>
+                  <div className="text-xs text-muted-foreground">Full DocShowcase interface with headers and footers.</div>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="format" 
+                  value="compact" 
+                  checked={format === "compact"} 
+                  onChange={(e) => setFormat(e.target.value)}
+                  className="mt-1"
+                />
+                <div>
+                  <div className="text-sm font-medium">Embed (Compact)</div>
+                  <div className="text-xs text-muted-foreground">Clean view without UI — perfect for embedding.</div>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="format" 
+                  value="extended" 
+                  checked={format === "extended"} 
+                  onChange={(e) => setFormat(e.target.value)}
+                  className="mt-1"
+                />
+                <div>
+                  <div className="text-sm font-medium">Full Width</div>
+                  <div className="text-xs text-muted-foreground">Edge-to-edge view with no UI — great for presentations.</div>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="format" 
+                  value="raw" 
+                  checked={format === "raw"} 
+                  onChange={(e) => setFormat(e.target.value)}
+                  className="mt-1"
+                />
+                <div>
+                  <div className="text-sm font-medium">Raw Source</div>
+                  <div className="text-xs text-muted-foreground">Opens the raw file directly in your browser.</div>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="format" 
+                  value="download" 
+                  checked={format === "download"} 
+                  onChange={(e) => setFormat(e.target.value)}
+                  className="mt-1"
+                />
+                <div>
+                  <div className="text-sm font-medium">Direct Download</div>
+                  <div className="text-xs text-muted-foreground">URL will automatically trigger a file download.</div>
+                </div>
+              </label>
+            </div>
+          )}
         </div>
       </div>
     </div>

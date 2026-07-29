@@ -21,5 +21,5 @@ export default async function SharePage({ params }: SharePageProps) {
     notFound();
   }
 
-  return <ShareClient documentId={id} documentName={document.name} />;
+  return <ShareClient documentId={id} documentName={document.name} documentType={document.type} />;
 }
