@@ -145,7 +145,7 @@ export default function HomePage() {
             <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
               <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
                 <Code className="h-5 w-5 text-primary" />
-                Raw Mode (<code className="text-sm bg-muted px-1.5 py-0.5 rounded">/raw/[id]</code>)
+                Raw Mode (<code className="text-sm bg-muted px-1.5 py-0.5 rounded">/raw/[id].md</code>)
               </h3>
               <ul className="space-y-4 text-sm text-muted-foreground">
                 <li>

@@ -257,8 +257,8 @@ Access documents natively in the browser without any sandbox, iframes, or websit
 #### Examples
 
 ```
-/raw/my-document                    → Native raw rendering in the browser
-/raw/my-document?display=download   → Downloads the file directly
+/raw/my-document.md                    → Native raw rendering in the browser
+/raw/my-document.html?display=download → Downloads the file directly
 ```
 
 ---
