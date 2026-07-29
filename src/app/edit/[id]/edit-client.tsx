@@ -27,9 +27,10 @@ export function EditDocumentClient({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Check for session token in sessionStorage
-    const token = sessionStorage.getItem(`edit-token-${documentId}`);
-    if (token) {
+    // Check for passkey in sessionStorage
+    const savedPasskey = sessionStorage.getItem(`edit-passkey-${documentId}`);
+    if (savedPasskey) {
+      setPasskey(savedPasskey);
       setAuthorized(true);
     }
     setChecking(false);
@@ -66,7 +67,7 @@ export function EditDocumentClient({
       const data = await res.json();
 
       if (res.ok && data.success) {
-        sessionStorage.setItem(`edit-token-${documentId}`, data.token);
+        sessionStorage.setItem(`edit-passkey-${documentId}`, passkey);
         setAuthorized(true);
       } else {
         setError(data.error || "Verification failed.");
@@ -158,6 +159,7 @@ export function EditDocumentClient({
       documentId={documentId}
       initialDocument={initialDoc}
       isEditing
+      passkey={passkey}
     />
   );
 }

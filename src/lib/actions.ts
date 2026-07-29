@@ -9,9 +9,14 @@ import {
   deleteDoc,
   increment,
   serverTimestamp,
+  collection,
+  getDocs,
+  query,
+  orderBy
 } from "firebase/firestore";
 import { revalidatePath } from "next/cache";
-import { hashPasskey } from "@/lib/crypto";
+import { cookies } from "next/headers";
+import { hashPasskey, verifyPasskey } from "@/lib/crypto";
 import type { DocType, DocumentData } from "@/lib/types";
 import { app } from "@/lib/firebase";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
@@ -128,9 +133,17 @@ export async function updateDocument(
   id: string,
   name: string,
   content: string,
-  type: DocType
+  type: DocType,
+  passkey: string
 ) {
   try {
+    const docData = await getDocument(id);
+    if (!docData) return { error: "Document not found." };
+    if (!docData.passkeyHash) return { error: "Document is read-only." };
+
+    const isValid = await verifyPasskey(passkey, docData.passkeyHash);
+    if (!isValid) return { error: "Unauthorized: Incorrect passkey." };
+
     // Authenticate server as the editor user
     await authenticateEditor();
 
@@ -200,20 +213,117 @@ export async function registerView(id: string) {
 
 export async function burnDocument(id: string) {
   try {
+    const docData = await getDocument(id);
+    if (!docData || !docData.burnAfterReading) {
+      console.warn("Attempted to burn non-burnable document:", id);
+      return { error: "Document is not burnable." };
+    }
+
     await authenticateEditor();
     const docRef = doc(db, "documents", id);
     await deleteDoc(docRef);
+    return { success: true };
   } catch (error) {
     console.error("Error burning document:", error);
+    return { error: "Failed to burn document" };
   }
 }
+
 export async function deleteDocument(id: string) {
   try {
+    const docData = await getDocument(id);
+    if (!docData) return;
+
+    const isExpired = docData.expiresAt && Date.now() > docData.expiresAt.seconds * 1000;
+    if (!isExpired) {
+      return { error: "Only expired documents can be lazy-deleted." };
+    }
+
     await authenticateEditor();
     const docRef = doc(db, "documents", id);
     await deleteDoc(docRef);
   } catch (error) {
     console.error("Error deleting document:", error);
+  }
+}
+
+// ==========================================
+// ADMIN DASHBOARD ACTIONS
+// ==========================================
+
+export async function adminLogin(password: string) {
+  const adminPass = process.env.ADMIN_PASSWORD;
+  if (!adminPass || password !== adminPass) {
+    return { success: false, error: "Invalid admin password" };
+  }
+  
+  const cookieStore = await cookies();
+  cookieStore.set("admin-token", password, { 
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === "production",
+    path: "/"
+  });
+  return { success: true };
+}
+
+export async function adminLogout() {
+  const cookieStore = await cookies();
+  cookieStore.delete("admin-token");
+  return { success: true };
+}
+
+async function verifyAdmin() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("admin-token")?.value;
+  const adminPass = process.env.ADMIN_PASSWORD;
+  if (!adminPass || token !== adminPass) {
+    throw new Error("Unauthorized Admin Access");
+  }
+}
+
+export async function getAllDocuments() {
+  try {
+    await verifyAdmin();
+    const q = query(collection(db, "documents"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        name: data.name,
+        type: data.type,
+        views: data.views || 0,
+        burnAfterReading: data.burnAfterReading || false,
+        expiresAt: data.expiresAt ? data.expiresAt.seconds * 1000 : null,
+        createdAt: data.createdAt ? data.createdAt.seconds * 1000 : null,
+        contentPreview: data.content ? data.content.substring(0, 150) : "",
+        isEncrypted: data.content?.startsWith("ENC:") || false
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching all docs:", error);
+    return [];
+  }
+}
+
+export async function adminGetFullDocument(id: string) {
+  await verifyAdmin();
+  const docData = await getDocument(id);
+  if (!docData) {
+    return { success: false, error: "Document not found" };
+  }
+  return { success: true, content: docData.content };
+}
+
+export async function adminDeleteDocument(id: string) {
+  try {
+    await verifyAdmin();
+    await authenticateEditor();
+    await deleteDoc(doc(db, "documents", id));
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to delete" };
   }
 }
 

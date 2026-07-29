@@ -27,12 +27,14 @@ interface EditorViewProps {
   documentId?: string;
   initialDocument?: DocumentData;
   isEditing?: boolean;
+  passkey?: string;
 }
 
 export function EditorView({
   documentId,
   initialDocument,
   isEditing = false,
+  passkey: initialPasskey = "",
 }: EditorViewProps) {
   const router = useRouter();
   const [name, setName] = useState(initialDocument?.name || "");
@@ -40,7 +42,7 @@ export function EditorView({
   const [docType, setDocType] = useState<DocType>(
     initialDocument?.type || "markdown"
   );
-  const [passkey, setPasskey] = useState("");
+  const [passkey, setPasskey] = useState(initialPasskey);
   const [viewPassword, setViewPassword] = useState("");
   const [expiration, setExpiration] = useState<"never" | "burn" | "1h" | "24h" | "7d">("never");
   const [saving, setSaving] = useState(false);
@@ -320,7 +322,7 @@ export function EditorView({
 
       let result;
       if (isEditing && documentId) {
-        result = await updateDocument(documentId, name, contentToSave, effectiveType);
+        result = await updateDocument(documentId, name, contentToSave, effectiveType, passkey.trim() || "");
       } else {
         result = await saveDocument(
           name,
