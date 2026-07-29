@@ -58,6 +58,8 @@ export async function GET(
   }
 
   const headers = new Headers();
+  headers.set("Access-Control-Allow-Origin", "*");
+  headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
 
   // Determine Content-Type based on document type / extension
   if (type === "html" || expectedExt === "html") {
@@ -85,6 +87,18 @@ export async function GET(
 
   return new NextResponse(content, {
     status: 200,
+    headers,
+  });
+}
+
+export async function OPTIONS() {
+  const headers = new Headers();
+  headers.set("Access-Control-Allow-Origin", "*");
+  headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  
+  return new NextResponse(null, {
+    status: 204,
     headers,
   });
 }
