@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { FileText, Plus } from "lucide-react";
+import Image from "next/image";
+import { Plus } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { EditorSettingsDialog } from "@/components/editor-settings-dialog";
 
@@ -14,8 +15,8 @@ export function Header() {
             href="/"
             className="flex items-center gap-2 text-foreground hover:opacity-80 transition-opacity shrink-0"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shrink-0">
-              <FileText className="h-4 w-4 text-primary-foreground" />
+            <div className="flex h-8 w-8 items-center justify-center shrink-0">
+              <Image src="/logo.svg" alt="DocShowcase Logo" width={32} height={32} className="h-full w-full drop-shadow-md" />
             </div>
             <span id="header-logo-text" className="text-lg font-semibold tracking-tight">
               DocShowcase
