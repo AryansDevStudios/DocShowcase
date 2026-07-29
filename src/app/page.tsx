@@ -114,6 +114,52 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* URL Parameters Section */}
+      <section className="border-t border-border bg-background">
+        <div className="mx-auto max-w-5xl px-4 py-16">
+          <h2 className="text-center text-2xl font-bold mb-10">
+            Powerful URL Parameters
+          </h2>
+          
+          <div className="grid gap-8 md:grid-cols-2">
+            {/* View Endpoint */}
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                <Eye className="h-5 w-5 text-primary" />
+                Viewer Mode (<code className="text-sm bg-muted px-1.5 py-0.5 rounded">/view/[id]</code>)
+              </h3>
+              <ul className="space-y-4 text-sm text-muted-foreground">
+                <li>
+                  <strong className="text-foreground">Default:</strong> Full app UI with header, document title, and edit buttons.
+                </li>
+                <li>
+                  <strong className="text-foreground">?display=compact:</strong> Hides UI. Shows only the Markdown content in a centered layout.
+                </li>
+                <li>
+                  <strong className="text-foreground">?display=extended:</strong> Hides UI. Shows Markdown content stretched to the full width.
+                </li>
+              </ul>
+            </div>
+
+            {/* Raw Endpoint */}
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                <Code className="h-5 w-5 text-primary" />
+                Raw Mode (<code className="text-sm bg-muted px-1.5 py-0.5 rounded">/raw/[id]</code>)
+              </h3>
+              <ul className="space-y-4 text-sm text-muted-foreground">
+                <li>
+                  <strong className="text-foreground">Default or ?display=normal:</strong> Serves the file natively to your browser (plain text for Markdown, native webpage for HTML) without iframes or app UI.
+                </li>
+                <li>
+                  <strong className="text-foreground">?display=download:</strong> Triggers an instant download of the file to your computer.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-4 py-16 text-center">

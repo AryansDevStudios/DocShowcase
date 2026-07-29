@@ -224,7 +224,9 @@ graph TD
 
 ## URL Parameters
 
-When viewing a document at `/view/{id}`, you can customize the display using query parameters:
+### Viewing Endpoint (`/view/{id}`)
+
+When viewing a document, you can customize the display using query parameters:
 
 | Parameter   | Value      | Behavior                                                                                    |
 | ----------- | ---------- | ------------------------------------------------------------------------------------------- |
@@ -232,7 +234,7 @@ When viewing a document at `/view/{id}`, you can customize the display using que
 | `display`   | `compact`  | Hides app UI. Shows only the Markdown content in a centered, readable-width layout          |
 | `display`   | `extended` | Hides app UI. Shows Markdown content stretched to the full width of the screen              |
 
-### Examples
+#### Examples
 
 ```
 /view/my-document                    → Normal view with full app UI
@@ -240,7 +242,24 @@ When viewing a document at `/view/{id}`, you can customize the display using que
 /view/my-document?display=extended   → Full-width content only
 ```
 
-> **HTML documents** always render in full-screen mode (no app UI) by default. Use `?display=compact` to embed them within the app layout.
+> **Note:** HTML documents always render in full-screen mode (no app UI) by default. Use `?display=compact` to embed them within the app layout.
+
+### Raw Endpoint (`/raw/{id}`)
+
+Access documents natively in the browser without any sandbox, iframes, or website UI.
+
+| Parameter   | Value      | Behavior                                                                                    |
+| ----------- | ---------- | ------------------------------------------------------------------------------------------- |
+| *(none)*    | —          | **Default.** Renders natively in the browser (`text/plain` for Markdown, `text/html` for HTML) |
+| `display`   | `normal`   | Explicitly acts identical to the default behavior.                                          |
+| `display`   | `download` | Triggers a file download to the user's computer (as `.md` or `.html`).                      |
+
+#### Examples
+
+```
+/raw/my-document                    → Native raw rendering in the browser
+/raw/my-document?display=download   → Downloads the file directly
+```
 
 ---
 
