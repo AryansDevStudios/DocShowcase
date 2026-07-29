@@ -114,59 +114,48 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How to Access Section */}
+      {/* URL Parameters Section */}
       <section className="border-t border-border bg-background">
         <div className="mx-auto max-w-5xl px-4 py-16">
-          <h2 className="text-center text-2xl font-bold mb-3">
-            Multiple Ways to Access Your Documents
+          <h2 className="text-center text-2xl font-bold mb-10">
+            Powerful URL Parameters
           </h2>
-          <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Every document you create gets a unique link. Here&apos;s how you can view, embed, or download it.
-          </p>
           
-          <div className="space-y-4 max-w-3xl mx-auto">
-            {[
-              {
-                label: "View",
-                url: "/view/my-doc",
-                description: "Opens the document with the full DocShowcase interface.",
-              },
-              {
-                label: "Embed",
-                url: "/view/my-doc?display=compact",
-                description: "Clean view without headers or footers — perfect for embedding.",
-              },
-              {
-                label: "Full Width",
-                url: "/view/my-doc?display=extended",
-                description: "Edge-to-edge view with no UI — great for presentations.",
-              },
-              {
-                label: "Raw File",
-                url: "/raw/my-doc.md",
-                description: "Opens the raw source directly in your browser. Use .md or .html.",
-              },
-              {
-                label: "Download",
-                url: "/raw/my-doc.md?display=download",
-                description: "Downloads the file straight to your computer.",
-              },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/30"
-              >
-                <span className="inline-flex shrink-0 items-center justify-center rounded-lg bg-primary/10 px-3 py-1 text-xs font-bold text-primary uppercase tracking-wider">
-                  {item.label}
-                </span>
-                <code className="text-sm bg-muted px-2 py-1 rounded font-mono shrink-0">
-                  {item.url}
-                </code>
-                <span className="text-sm text-muted-foreground">
-                  {item.description}
-                </span>
-              </div>
-            ))}
+          <div className="grid gap-8 md:grid-cols-2">
+            {/* View Endpoint */}
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                <Eye className="h-5 w-5 text-primary" />
+                Viewer Mode (<code className="text-sm bg-muted px-1.5 py-0.5 rounded">/view/[id]</code>)
+              </h3>
+              <ul className="space-y-4 text-sm text-muted-foreground">
+                <li>
+                  <strong className="text-foreground">Default:</strong> Full app UI with header, document title, and edit buttons.
+                </li>
+                <li>
+                  <strong className="text-foreground">?display=compact:</strong> Hides UI. Shows only the Markdown content in a centered layout.
+                </li>
+                <li>
+                  <strong className="text-foreground">?display=extended:</strong> Hides UI. Shows Markdown content stretched to the full width.
+                </li>
+              </ul>
+            </div>
+
+            {/* Raw Endpoint */}
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                <Code className="h-5 w-5 text-primary" />
+                Raw Mode (<code className="text-sm bg-muted px-1.5 py-0.5 rounded">/raw/[id].md</code>)
+              </h3>
+              <ul className="space-y-4 text-sm text-muted-foreground">
+                <li>
+                  <strong className="text-foreground">Default or ?display=normal:</strong> Serves the file natively to your browser (plain text for Markdown, native webpage for HTML) without iframes or app UI.
+                </li>
+                <li>
+                  <strong className="text-foreground">?display=download:</strong> Triggers an instant download of the file to your computer.
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
