@@ -138,9 +138,9 @@ export const PreviewPane = ({ content, type, className = "", onScroll, ref }: Pr
             tagNames: [...(defaultSchema.tagNames || []), 'svg', 'path'],
             attributes: {
               ...defaultSchema.attributes,
-              '*': [...(defaultSchema.attributes?.['*'] || []), 'className', 'dir'],
-              svg: ['viewBox', 'version', 'width', 'height', 'aria-hidden'],
-              path: ['d']
+              '*': [...(defaultSchema.attributes?.['*'] || []), 'className', 'dir', 'class'],
+              svg: ['viewBox', 'version', 'width', 'height', 'aria-hidden', 'data-component'],
+              path: ['d', 'fill-rule', 'clip-rule', 'fill']
             }
           }],
           rehypeSlug,
