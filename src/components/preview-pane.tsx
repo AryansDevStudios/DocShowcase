@@ -139,6 +139,7 @@ export const PreviewPane = ({ content, type, className = "", onScroll, ref }: Pr
             attributes: {
               ...defaultSchema.attributes,
               '*': [...(defaultSchema.attributes?.['*'] || []), 'className', 'dir', 'class'],
+              span: ['className', 'style'],
               svg: ['viewBox', 'version', 'width', 'height', 'aria-hidden', 'data-component'],
               path: ['d', 'fill-rule', 'clip-rule', 'fill']
             }
