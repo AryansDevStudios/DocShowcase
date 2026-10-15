@@ -1,0 +1,10 @@
+# DocShowcase Cloudflare Worker Environment Variables & Secrets
+# Copy this file to .dev.vars for local development or configure in Cloudflare Dashboard:
+# Workers & Pages -> your-worker -> Settings -> Variables and Secrets
+
+FIREBASE_API_KEY=AIzaSy...your-firebase-api-key
+FIREBASE_PROJECT_ID=your-firebase-project-id
+FIREBASE_BOT_EMAIL=editor@docshowcase.aryansdevstudios.com
+FIREBASE_BOT_PASSWORD=your-bot-account-password
+ADMIN_PASSWORD=your-admin-page-password
+APP_URL=https://docshowcase.netlify.app

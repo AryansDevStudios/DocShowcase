@@ -1,0 +1,22 @@
+name = "docshowcase-backend"
+main = "worker/src/index.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Zero-Trust Security: Disable automatic request/response body observability logging
+[observability]
+enabled = false
+
+# Automated Cron Trigger: Purge expired documents every 15 minutes
+[triggers]
+crons = ["*/15 * * * *"]
+
+[vars]
+APP_URL = "https://docshowcase.netlify.app"
+
+# Secrets required in Cloudflare Worker (configure via `wrangler secret put <KEY>`):
+# - FIREBASE_API_KEY
+# - FIREBASE_PROJECT_ID
+# - FIREBASE_BOT_EMAIL
+# - FIREBASE_BOT_PASSWORD
+# - ADMIN_PASSWORD

@@ -8,6 +8,7 @@
 
 <p align="center">
   <a href="#features">Features</a> •
+  <a href="#remote-mcp-server-for-ai">Remote MCP Server</a> •
   <a href="#tech-stack">Tech Stack</a> •
   <a href="#getting-started">Getting Started</a> •
   <a href="#usage">Usage</a> •
@@ -66,6 +67,41 @@
 - **Custom Format Auto-Detection** — Add extensions like `.js`, `.py`, `.css`, or `.json` to your document name. The `/raw` endpoint automatically infers the correct `Content-Type` MIME headers for seamless embedding in other websites!
 - **Responsive Mobile Overhaul** — A completely revamped, touch-friendly mobile editor toolbar that neatly stacks formatting and security controls for writing on the go.
 
+### ⚡ Edge Engine & Multi-Asset Delivery
+
+- **Multi-Asset Raw Delivery Engine** — High-speed asset router (`/raw/:id` and `/raw/:id/:filename`) hosted on Cloudflare Workers edge. Serves live HTML, JS, CSS, JSON, Markdown, and SVG natively with full CORS (`Access-Control-Allow-Origin: *`) and Cross-Origin Resource Policy headers.
+- **Playable HTML Execution** — HTML documents render natively in desktop and mobile browsers with permissive Content-Security-Policy headers supporting external CDNs (Three.js, Tailwind, Google Fonts, unpkg, cdnjs), WebGL, and WebAudio.
+- **Zero-Dependency Firestore REST** — Communicates with Firebase Firestore over Google's IdentityToolkit and REST API with zero external libraries and near-0ms warm isolate response times.
+- **Automated Cron Cleanups** — Cloudflare cron trigger purges expired self-destructing documents from Firestore every 15 minutes.
+
+---
+
+## 🤖 Remote MCP Server (for AI)
+
+DocShowcase features a **Zero-Trust Remote Model Context Protocol (MCP)** server hosted at `/mcp`. Any AI assistant (**Claude Desktop**, **Cursor IDE**, **Windsurf**, or autonomous LLM agents) can create, inspect, surgically patch, blind-overwrite, and manage live documents directly.
+
+### Features
+- **JSON-RPC 2.0 & Streamable HTTP / SSE** protocol compliance.
+- **Tools Included**: `create_document`, `get_document`, `patch_document`, `update_document`, `delete_document`, `get_document_info`.
+- **Zero-Trust Security**: No query-string passwords, observability logging disabled (`[observability] enabled = false`), and guaranteed in-memory zeroing of password/key buffers in `finally` blocks.
+- **Detailed Documentation**: See the [📖 Complete MCP Server Guide](docs/MCP_SERVER.md) for full tool schemas, JSON-RPC examples, and client configuration instructions.
+
+### Quick Connect (Claude Desktop / Cursor)
+```json
+{
+  "mcpServers": {
+    "docshowcase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-fetch",
+        "https://YOUR_CLOUDFLARE_WORKER_URL/mcp"
+      ]
+    }
+  }
+}
+```
+
 ---
 
 ## Tech Stack
@@ -80,6 +116,7 @@
 | **Math**       | [KaTeX](https://katex.org/) via rehype-katex                                            |
 | **Diagrams**   | [Mermaid](https://mermaid.js.org/)                                                      |
 | **Database**   | [Firebase Firestore](https://firebase.google.com/docs/firestore)                        |
+| **Edge Backend**| [Cloudflare Workers](https://workers.cloudflare.com/) (Zero-Dependency REST & MCP Server) |
 | **Theming**    | [next-themes](https://github.com/pacocoursey/next-themes)                               |
 | **Fonts**      | [Inter](https://fonts.google.com/specimen/Inter) + [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono) |
 
@@ -342,56 +379,71 @@ docshowcase/
 
 ## Deployment
 
-### Firebase App Hosting
+### 1. Cloudflare Worker (Backend, Raw Engine & MCP Server)
 
-This project includes an `apphosting.yaml` for [Firebase App Hosting](https://firebase.google.com/docs/app-hosting):
+DocShowcase uses a zero-dependency Cloudflare Worker for high-speed raw asset delivery, document CRUD/expiry, and the remote MCP server.
 
-```bash
-firebase apphosting:backends:create
-```
+1. **Configure Secrets in Cloudflare:**
+   ```bash
+   npx wrangler secret put FIREBASE_API_KEY
+   npx wrangler secret put FIREBASE_PROJECT_ID
+   npx wrangler secret put FIREBASE_BOT_EMAIL
+   npx wrangler secret put FIREBASE_BOT_PASSWORD
+   npx wrangler secret put ADMIN_PASSWORD
+   ```
+   *(Or configure them in Cloudflare Dashboard: **Workers & Pages** → `docshowcase-backend` → **Settings** → **Variables and Secrets**).*
 
-### Vercel
+2. **Deploy Worker:**
+   ```bash
+   npm run worker:deploy
+   ```
 
-Deploy with one click using [Vercel](https://vercel.com/):
+3. **Run Automated Integration Tests:**
+   ```bash
+   npm run worker:test
+   ```
 
-1. Push your code to GitHub
-2. Import the repository in Vercel
-3. Add the environment variables in the Vercel dashboard
-4. Deploy
+### 2. Frontend (Netlify / Static Hosting)
 
-### Other Platforms
+The Next.js frontend is configured for static export (`output: 'export'`), published to the `out` folder:
 
-Any platform that supports Next.js can host DocShowcase. Make sure to:
-
-1. Set all `NEXT_PUBLIC_FIREBASE_*` environment variables
-2. Run `npm run build` to generate the production bundle
-3. Start the server with `npm start`
+1. Connect your repository to **Netlify**.
+2. Set build command: `npm run build`
+3. Set publish directory: `out`
+4. Set environment variable: `NEXT_PUBLIC_WORKER_URL=https://YOUR_WORKER_URL`
+5. The included `netlify.toml` automatically proxies `/raw/*` and `/mcp` requests directly to the Cloudflare Worker.
 
 ---
 
 ## Firestore Security Rules
 
-To ensure maximum security in production, all write operations are routed securely through the Next.js server, which uses the dedicated `FIREBASE_EDITOR` credentials to authenticate.
+To ensure complete security in production, all write, update, and delete operations are restricted exclusively to the authenticated Cloudflare Worker Bot user:
 
-Add these Firestore security rules in your Firebase Console to protect your data. Replace the `request.auth.uid` with the specific User UID of your editor account for the ultimate lockdown.
+Deploy the included `firestore.rules`:
+```bash
+firebase deploy --only firestore:rules
+```
 
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      // Anyone can read documents openly
-      allow read: if true;
-      
-      // ONLY the explicitly configured editor user can write, update, or delete.
-      // Replace the UID below with the User UID of your configured editor account.
-      allow write: if request.auth != null && request.auth.uid == 'YOUR_SPECIFIC_USER_UID';
+    match /documents/{documentId} {
+      // Public reads allowed for active unexpired documents
+      allow read: if resource == null || 
+                     resource.data.expiresAt == null || 
+                     resource.data.expiresAt > request.time;
+
+      // ONLY the authenticated Cloudflare Worker Bot account can write, update, or delete
+      allow write: if request.auth != null && 
+                      (request.auth.token.email == "editor@docshowcase.aryansdevstudios.com" ||
+                       request.auth.token.email.matches(".*@docshowcase.*"));
     }
   }
 }
 ```
 
-> **Security Note:** Because the Next.js server authenticates itself with your editor credentials, client-side writes are strictly blocked by these rules. Even if someone finds your Firebase project config, they cannot alter your database without the server's `.env` credentials.
+> **Security Note:** Because the Cloudflare Worker authenticates directly via IdentityToolkit REST with your bot credentials, direct unauthorized client-side writes to Firestore are blocked.
 
 ---
 

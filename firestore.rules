@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /documents/{documentId} {
+      // Public reads allowed for unexpired documents
+      allow read: if resource == null || 
+                     resource.data.expiresAt == null || 
+                     resource.data.expiresAt > request.time;
+
+      // All write, create, update, and delete operations are restricted strictly
+      // to the authenticated Cloudflare Worker Bot account
+      allow write: if request.auth != null && 
+                      (request.auth.token.email == "editor@docshowcase.aryansdevstudios.com" ||
+                       request.auth.token.email.matches(".*@docshowcase.*"));
+    }
+  }
+}

@@ -8,6 +8,25 @@ export async function GET(
   const { id: rawId } = await params;
   const display = request.nextUrl.searchParams.get("display") || "normal";
 
+  const workerUrl = process.env.WORKER_URL || process.env.NEXT_PUBLIC_WORKER_URL;
+  if (workerUrl) {
+    try {
+      const targetUrl = `${workerUrl}/raw/${encodeURIComponent(rawId)}${request.nextUrl.search}`;
+      const res = await fetch(targetUrl, {
+        headers: {
+          Accept: request.headers.get("Accept") || "*/*",
+        },
+      });
+      const headers = new Headers(res.headers);
+      return new NextResponse(res.body, {
+        status: res.status,
+        headers,
+      });
+    } catch (e) {
+      console.warn("Worker raw fetch failed, falling back:", e);
+    }
+  }
+
   // Check if the URL already has an extension
   const urlExtMatch = rawId.match(/\.([a-z0-9]+)$/i);
   const hasExtension = !!urlExtMatch;

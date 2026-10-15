@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "worker:dev": "wrangler dev",
+    "worker:deploy": "wrangler deploy",
+    "worker:test": "tsx worker/test-worker.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

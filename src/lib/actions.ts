@@ -45,6 +45,10 @@ const generateSlug = (name: string) => {
     .replace(/-+/g, "-");
 };
 
+const getWorkerUrl = () => {
+  return process.env.WORKER_URL || process.env.NEXT_PUBLIC_WORKER_URL;
+};
+
 const generateShortId = (length = 8) => {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
@@ -63,6 +67,25 @@ export async function saveDocument(
   passkey: string | null,
   expiration: "never" | "burn" | "1h" | "24h" | "7d" = "never"
 ) {
+  // If Cloudflare Worker URL is configured, route via Worker
+  const workerUrl = getWorkerUrl();
+  if (workerUrl) {
+    try {
+      const res = await fetch(`${workerUrl}/api/docs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, content, type, editPassword: passkey, expiration }),
+      });
+      const data = await res.json();
+      if (res.ok && data.id) {
+        return { id: data.id };
+      }
+      if (data.error) return { error: data.error };
+    } catch (e) {
+      console.warn("Worker call failed, falling back to direct Firebase:", e);
+    }
+  }
+
   try {
     // Authenticate server as the editor user
     await authenticateEditor();
@@ -136,6 +159,25 @@ export async function updateDocument(
   type: DocType,
   passkey: string
 ) {
+  const workerUrl = getWorkerUrl();
+  if (workerUrl) {
+    try {
+      const res = await fetch(`${workerUrl}/api/docs/${encodeURIComponent(id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, content, type, editPassword: passkey }),
+      });
+      const data = await res.json();
+      if (res.ok && data.id) {
+        revalidatePath(`/view/${id}`);
+        return { id: data.id };
+      }
+      if (data.error) return { error: data.error };
+    } catch (e) {
+      console.warn("Worker update failed, falling back to direct Firebase:", e);
+    }
+  }
+
   try {
     const docData = await getDocument(id);
     if (!docData) return { error: "Document not found." };
@@ -178,6 +220,32 @@ export async function updateDocument(
 export async function getDocument(
   id: string
 ): Promise<DocumentData | null> {
+  const workerUrl = getWorkerUrl();
+  if (workerUrl) {
+    try {
+      const res = await fetch(`${workerUrl}/api/docs/${encodeURIComponent(id)}`, {
+        cache: "no-store",
+      });
+      if (res.status === 404 || res.status === 410) return null;
+      if (res.ok) {
+        const data = await res.json();
+        return {
+          name: data.name,
+          content: data.content,
+          type: data.type,
+          passkeyHash: data.passkeyHash,
+          views: data.views,
+          expiresAt: data.expiresAt ? (typeof data.expiresAt === "object" ? data.expiresAt : { seconds: Math.floor(new Date(data.expiresAt).getTime() / 1000), nanoseconds: 0 }) : null,
+          burnAfterReading: data.burnAfterReading,
+          createdAt: data.createdAt ? (typeof data.createdAt === "object" ? data.createdAt : { seconds: Math.floor(new Date(data.createdAt).getTime() / 1000), nanoseconds: 0 }) : undefined,
+          updatedAt: data.updatedAt ? (typeof data.updatedAt === "object" ? data.updatedAt : { seconds: Math.floor(new Date(data.updatedAt).getTime() / 1000), nanoseconds: 0 }) : undefined,
+        };
+      }
+    } catch (e) {
+      console.warn("Worker getDocument failed, falling back to direct Firebase:", e);
+    }
+  }
+
   try {
     const docRef = doc(db, "documents", id);
     const docSnap = await getDoc(docRef);
@@ -212,6 +280,18 @@ export async function registerView(id: string) {
 }
 
 export async function burnDocument(id: string) {
+  const workerUrl = getWorkerUrl();
+  if (workerUrl) {
+    try {
+      const res = await fetch(`${workerUrl}/api/burn/${encodeURIComponent(id)}`, {
+        method: "POST",
+      });
+      if (res.ok) return { success: true };
+    } catch (e) {
+      console.warn("Worker burn failed, falling back:", e);
+    }
+  }
+
   try {
     const docData = await getDocument(id);
     if (!docData || !docData.burnAfterReading) {
@@ -264,6 +344,33 @@ export async function checkAdminPassword(password: string) {
 }
 
 export async function getAllDocuments(adminPass: string) {
+  const workerUrl = getWorkerUrl();
+  if (workerUrl) {
+    try {
+      await verifyAdmin(adminPass);
+      const res = await fetch(`${workerUrl}/api/admin/docs`, {
+        headers: { "X-Admin-Password": adminPass },
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return (data.documents || []).map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          type: d.type,
+          views: d.views || 0,
+          burnAfterReading: Boolean(d.burnAfterReading),
+          expiresAt: d.expiresAt ? (typeof d.expiresAt === "object" ? d.expiresAt.seconds * 1000 : new Date(d.expiresAt).getTime()) : null,
+          createdAt: d.createdAt ? (typeof d.createdAt === "object" ? d.createdAt.seconds * 1000 : new Date(d.createdAt).getTime()) : null,
+          contentPreview: d.contentPreview || "",
+          isEncrypted: Boolean(d.isEncrypted),
+        }));
+      }
+    } catch (e) {
+      console.warn("Worker getAllDocuments failed, falling back:", e);
+    }
+  }
+
   try {
     await verifyAdmin(adminPass);
     const q = query(collection(db, "documents"), orderBy("createdAt", "desc"));
@@ -298,6 +405,23 @@ export async function adminGetFullDocument(id: string, adminPass: string) {
 }
 
 export async function adminDeleteDocument(id: string, adminPass: string) {
+  const workerUrl = getWorkerUrl();
+  if (workerUrl) {
+    try {
+      await verifyAdmin(adminPass);
+      const res = await fetch(`${workerUrl}/api/docs/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: { "X-Admin-Password": adminPass },
+      });
+      if (res.ok) {
+        revalidatePath("/admin");
+        return { success: true };
+      }
+    } catch (e) {
+      console.warn("Worker adminDeleteDocument failed, falling back:", e);
+    }
+  }
+
   try {
     await verifyAdmin(adminPass);
     await authenticateEditor();

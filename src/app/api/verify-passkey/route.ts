@@ -14,6 +14,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const workerUrl = process.env.WORKER_URL || process.env.NEXT_PUBLIC_WORKER_URL;
+    if (workerUrl) {
+      try {
+        const res = await fetch(`${workerUrl}/api/verify-passkey`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, passkey }),
+        });
+        const data = await res.json();
+        return NextResponse.json(data, { status: res.status });
+      } catch (e) {
+        console.warn("Worker verify-passkey failed, falling back to direct Firebase:", e);
+      }
+    }
+
     const docRef = doc(db, "documents", id);
     const docSnap = await getDoc(docRef);
 
