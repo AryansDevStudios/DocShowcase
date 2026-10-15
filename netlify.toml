@@ -21,3 +21,11 @@
   to = "https://docshowcase.adsbackend01.workers.dev/api/:splat"
   status = 200
   force = true
+
+# Route /health requests directly to Cloudflare Worker
+[[redirects]]
+  from = "/health"
+  to = "https://docshowcase.adsbackend01.workers.dev/health"
+  status = 200
+  force = true
+

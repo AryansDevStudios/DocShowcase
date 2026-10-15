@@ -1,0 +1,5 @@
+# High-Precedence Edge Proxy to Cloudflare Worker
+/health https://docshowcase.adsbackend01.workers.dev/health 200!
+/raw/* https://docshowcase.adsbackend01.workers.dev/raw/:splat 200!
+/mcp https://docshowcase.adsbackend01.workers.dev/mcp 200!
+/api/* https://docshowcase.adsbackend01.workers.dev/api/:splat 200!

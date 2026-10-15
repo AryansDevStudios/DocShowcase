@@ -10,7 +10,8 @@
     "worker:dev": "wrangler dev",
     "worker:deploy": "wrangler deploy",
     "worker:test": "tsx worker/test-worker.mjs",
-    "test:deployed": "node test-deployed.mjs"
+    "test:deployed": "node test-deployed.mjs",
+    "test:all": "node test-all.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
