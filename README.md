@@ -95,7 +95,7 @@ DocShowcase features a **Zero-Trust Remote Model Context Protocol (MCP)** server
       "args": [
         "-y",
         "@modelcontextprotocol/server-fetch",
-        "https://YOUR_CLOUDFLARE_WORKER_URL/mcp"
+        "https://docshowcase.adsbackend01.workers.dev/mcp"
       ]
     }
   }
@@ -410,8 +410,8 @@ The Next.js frontend is configured for static export (`output: 'export'`), publi
 1. Connect your repository to **Netlify**.
 2. Set build command: `npm run build`
 3. Set publish directory: `out`
-4. Set environment variable: `NEXT_PUBLIC_WORKER_URL=https://YOUR_WORKER_URL`
-5. The included `netlify.toml` automatically proxies `/raw/*` and `/mcp` requests directly to the Cloudflare Worker.
+4. Set environment variable: `NEXT_PUBLIC_WORKER_URL=https://docshowcase.adsbackend01.workers.dev`
+5. The included `netlify.toml` automatically proxies `/raw/*`, `/mcp`, and `/api/*` requests directly to the Cloudflare Worker.
 
 ---
 

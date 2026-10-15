@@ -8,7 +8,7 @@ export async function GET(
   const { id: rawId } = await params;
   const display = request.nextUrl.searchParams.get("display") || "normal";
 
-  const workerUrl = process.env.WORKER_URL || process.env.NEXT_PUBLIC_WORKER_URL;
+  const workerUrl = process.env.WORKER_URL || process.env.NEXT_PUBLIC_WORKER_URL || "https://docshowcase.adsbackend01.workers.dev";
   if (workerUrl) {
     try {
       const targetUrl = `${workerUrl}/raw/${encodeURIComponent(rawId)}${request.nextUrl.search}`;

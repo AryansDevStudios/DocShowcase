@@ -68,14 +68,12 @@ Add `docshowcase` under `mcpServers`:
       "args": [
         "-y",
         "@modelcontextprotocol/server-fetch",
-        "https://YOUR_CLOUDFLARE_WORKER_URL/mcp"
+        "https://docshowcase.adsbackend01.workers.dev/mcp"
       ]
     }
   }
 }
 ```
-
-*(Replace `https://YOUR_CLOUDFLARE_WORKER_URL/mcp` with your actual worker URL or custom domain).*
 
 ### 2. Cursor IDE Setup
 1. In Cursor, open **Settings** (`Ctrl+,` or `Cmd+,`).
@@ -83,11 +81,11 @@ Add `docshowcase` under `mcpServers`:
 3. Click **Add New MCP Server**:
    - **Name:** `DocShowcase`
    - **Type:** `command`
-   - **Command:** `npx -y @modelcontextprotocol/server-fetch https://YOUR_CLOUDFLARE_WORKER_URL/mcp`
+   - **Command:** `npx -y @modelcontextprotocol/server-fetch https://docshowcase.adsbackend01.workers.dev/mcp`
 
 ### 3. Direct Remote Streamable HTTP / SSE
 For agents or platforms that support remote HTTP/SSE directly:
-- **Endpoint URL:** `https://YOUR_CLOUDFLARE_WORKER_URL/mcp`
+- **Endpoint URL:** `https://docshowcase.adsbackend01.workers.dev/mcp`
 - **Transport:** HTTP `POST` (JSON-RPC 2.0) or `GET` (`Accept: text/event-stream` for SSE)
 
 ---
@@ -359,22 +357,22 @@ When building multi-file web applications, games, or interactive demos via MCP, 
 
 1. Create the stylesheet (`styles.css`):
    ```
-   Raw URL: https://YOUR_WORKER_URL/raw/css-id/styles.css
+   Raw URL: https://docshowcase.adsbackend01.workers.dev/raw/css-id/styles.css
    ```
 2. Create the script (`engine.js`):
    ```
-   Raw URL: https://YOUR_WORKER_URL/raw/js-id/engine.js
+   Raw URL: https://docshowcase.adsbackend01.workers.dev/raw/js-id/engine.js
    ```
 3. Create the HTML document (`index.html`):
    ```html
    <!DOCTYPE html>
    <html>
    <head>
-     <link rel="stylesheet" href="https://YOUR_WORKER_URL/raw/css-id/styles.css">
+     <link rel="stylesheet" href="https://docshowcase.adsbackend01.workers.dev/raw/css-id/styles.css">
    </head>
    <body>
      <div id="game-canvas"></div>
-     <script src="https://YOUR_WORKER_URL/raw/js-id/engine.js"></script>
+     <script src="https://docshowcase.adsbackend01.workers.dev/raw/js-id/engine.js"></script>
    </body>
    </html>
    ```

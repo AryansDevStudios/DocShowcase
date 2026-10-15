@@ -10,17 +10,46 @@ let inflightAuthPromise: Promise<string> | null = null;
 
 const REFRESH_BUFFER_MS = 5 * 60 * 1000; // 5 minutes before expiration
 
+function cleanVal(v: any): string {
+  if (!v) return "";
+  return String(v).replace(/^["']|["']$/g, "").trim();
+}
+
+export function getApiKey(env: Env): string {
+  return cleanVal(env.FIREBASE_API_KEY || (env as any).NEXT_PUBLIC_FIREBASE_API_KEY);
+}
+
+export function getBotEmail(env: Env): string {
+  return cleanVal(env.FIREBASE_BOT_EMAIL || (env as any).FIREBASE_EDITOR_EMAIL);
+}
+
+export function getBotPassword(env: Env): string {
+  return cleanVal(env.FIREBASE_BOT_PASSWORD || (env as any).FIREBASE_EDITOR_PASSWORD);
+}
+
+export function getProjectId(env: Env): string {
+  return cleanVal(env.FIREBASE_PROJECT_ID || (env as any).NEXT_PUBLIC_FIREBASE_PROJECT_ID);
+}
+
 /**
  * Perform sign-in with email and password via Google IdentityToolkit
  */
 async function signIn(env: Env): Promise<CachedAuthSession> {
-  const url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${env.FIREBASE_API_KEY}`;
+  const apiKey = getApiKey(env);
+  const email = getBotEmail(env);
+  const password = getBotPassword(env);
+
+  if (!apiKey) {
+    throw new Error("Missing FIREBASE_API_KEY in Cloudflare Worker environment variables/secrets.");
+  }
+
+  const url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${encodeURIComponent(apiKey)}`;
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      email: env.FIREBASE_BOT_EMAIL,
-      password: env.FIREBASE_BOT_PASSWORD,
+      email,
+      password,
       returnSecureToken: true,
     }),
   });
@@ -50,7 +79,8 @@ async function signIn(env: Env): Promise<CachedAuthSession> {
  * Refresh an existing idToken using the refreshToken via SecureToken API
  */
 async function refreshToken(env: Env, token: string): Promise<CachedAuthSession> {
-  const url = `https://securetoken.googleapis.com/v1/token?key=${env.FIREBASE_API_KEY}`;
+  const apiKey = getApiKey(env);
+  const url = `https://securetoken.googleapis.com/v1/token?key=${encodeURIComponent(apiKey)}`;
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },

@@ -46,7 +46,7 @@ const generateSlug = (name: string) => {
 };
 
 const getWorkerUrl = () => {
-  return process.env.WORKER_URL || process.env.NEXT_PUBLIC_WORKER_URL;
+  return process.env.WORKER_URL || process.env.NEXT_PUBLIC_WORKER_URL || "https://docshowcase.adsbackend01.workers.dev";
 };
 
 const generateShortId = (length = 8) => {

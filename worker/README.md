@@ -100,14 +100,14 @@ Add to `claude_desktop_config.json`:
   "mcpServers": {
     "docshowcase": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-fetch", "https://docshowcase-backend.aryansdevstudios.workers.dev/mcp"]
+      "args": ["-y", "@modelcontextprotocol/server-fetch", "https://docshowcase.adsbackend01.workers.dev/mcp"]
     }
   }
 }
 ```
 Or directly connect via remote Streamable HTTP / SSE:
 ```
-URL: https://docshowcase-backend.aryansdevstudios.workers.dev/mcp
+URL: https://docshowcase.adsbackend01.workers.dev/mcp
 ```
 
 ### Available MCP Tools:

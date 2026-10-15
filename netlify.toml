@@ -4,13 +4,20 @@
 # Route /raw requests directly to Cloudflare Worker
 [[redirects]]
   from = "/raw/*"
-  to = "https://docshowcase-backend.aryansdevstudios.workers.dev/raw/:splat"
+  to = "https://docshowcase.adsbackend01.workers.dev/raw/:splat"
   status = 200
   force = true
 
 # Route MCP requests directly to Cloudflare Worker
 [[redirects]]
   from = "/mcp"
-  to = "https://docshowcase-backend.aryansdevstudios.workers.dev/mcp"
+  to = "https://docshowcase.adsbackend01.workers.dev/mcp"
+  status = 200
+  force = true
+
+# Route /api/* requests directly to Cloudflare Worker
+[[redirects]]
+  from = "/api/*"
+  to = "https://docshowcase.adsbackend01.workers.dev/api/:splat"
   status = 200
   force = true

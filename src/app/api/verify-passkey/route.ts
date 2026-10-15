@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const workerUrl = process.env.WORKER_URL || process.env.NEXT_PUBLIC_WORKER_URL;
+    const workerUrl = process.env.WORKER_URL || process.env.NEXT_PUBLIC_WORKER_URL || "https://docshowcase.adsbackend01.workers.dev";
     if (workerUrl) {
       try {
         const res = await fetch(`${workerUrl}/api/verify-passkey`, {

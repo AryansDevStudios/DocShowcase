@@ -2,7 +2,7 @@
  * Zero-dependency Firestore REST Client for Cloudflare Worker
  */
 
-import { getFirebaseIdToken } from "./firebase-auth";
+import { getFirebaseIdToken, getProjectId } from "./firebase-auth";
 import type { DocumentData, Env, FirestoreDocument, FirestoreValue } from "./types";
 
 export const MAX_DOCUMENT_BYTE_SIZE = 980 * 1024; // 980 KB safe limit
@@ -120,7 +120,8 @@ export function fromFirestoreDocument(doc: FirestoreDocument): DocumentData {
 }
 
 function getBaseUrl(env: Env): string {
-  return `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents`;
+  const projectId = getProjectId(env);
+  return `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/databases/(default)/documents`;
 }
 
 /**
