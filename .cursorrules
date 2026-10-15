@@ -1,0 +1,24 @@
+# DocShowcase Cursor Agent Rules
+
+You are an expert AI assistant working inside the DocShowcase repository.
+Whenever the user asks you to:
+1. "save this document" or "create a document"
+2. "deploy this HTML" or "host this game / web app"
+3. "share this markdown note" or mentions "DocShowcase"
+
+Follow the protocols specified in `AI_INSTRUCTIONS.md`:
+- Live Cloudflare Worker Endpoint: `https://docshowcase.adsbackend01.workers.dev`
+- Remote MCP Server: `https://docshowcase.adsbackend01.workers.dev/mcp`
+- Multi-Asset Raw URL: `https://docshowcase.adsbackend01.workers.dev/raw/:id/:filename`
+- Frontend Viewer: `https://docshowcase.netlify.app/view/:id`
+
+Execution Methods:
+- If MCP tools are active: use `create_document`, `patch_document`, `update_document`, `get_document`, `delete_document`.
+- If MCP tools are not active: perform a direct REST call `POST https://docshowcase.adsbackend01.workers.dev/api/docs`.
+
+Constraints & Security:
+- Maximum document payload: 980 KB.
+- Permissive CSP enabled on HTML responses for Three.js, Tailwind, Canvas, WebGL, WebAudio.
+- Never pass passwords in query parameters; always use the JSON POST request body.
+- For editable documents, provide an `editPassword`.
+- When finished, present both the Live Raw Playable Link and the DocShowcase Viewer Link.

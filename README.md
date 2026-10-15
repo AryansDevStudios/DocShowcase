@@ -102,6 +102,11 @@ DocShowcase features a **Zero-Trust Remote Model Context Protocol (MCP)** server
 }
 ```
 
+### 🤖 Autonomous AI Agent Operating Guide
+For autonomous AI assistants (Claude, Cursor, Antigravity, ChatGPT) deploying live HTML apps, games, or managing documents:
+- Read [📘 **`AI_INSTRUCTIONS.md`**](AI_INSTRUCTIONS.md) — The complete master operating protocol with direct cURL recipes, live endpoints, and execution limits.
+- Cursor IDE integration rules: [`.cursorrules`](.cursorrules).
+
 ---
 
 ## Tech Stack
